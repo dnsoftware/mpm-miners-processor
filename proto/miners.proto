@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "internal/adapter/grpc";
+
+import "google/rpc/status.proto"; // Импортируем стандартный тип ошибки
+
+message GetCoinIDByNameRequest {
+    string coin = 1;
+}
+
+message GetCoinIDByNameResponse {
+  int64 id = 1;
+  google.rpc.Status status = 2; // Код ошибки и описание
+}
+
+service Coin {
+    rpc GetCoinIDByName(GetCoinIDByNameRequest) returns (GetCoinIDByNameResponse);
+}
