@@ -1,0 +1,4 @@
+app_name: Miners processor
+app_version: 0.1
+postgres_dsn: "postgres://postgres:postgres@localhost:33484/postgres?sslmode=disable"
+jwt_secret: "jwtsecret"

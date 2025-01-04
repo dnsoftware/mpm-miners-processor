@@ -1,30 +1,25 @@
-package main
+package config
 
 import (
-	"context"
 	"log"
+	"testing"
 
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
+	"github.com/stretchr/testify/require"
 
-	"github.com/dnsoftware/mpm-miners-processor/config"
-	"github.com/dnsoftware/mpm-miners-processor/internal/app"
 	"github.com/dnsoftware/mpm-miners-processor/internal/constants"
 )
 
-func main() {
-	ctx := context.Background()
-
+func TestConfigNew(t *testing.T) {
 	basePath, err := utils.GetProjectRoot(constants.ProjectRootAnchorFile)
 	if err != nil {
 		log.Fatalf("GetProjectRoot failed: %s", err.Error())
 	}
-	configFile := basePath + "/config.yaml"
+	configFile := basePath + "/config_example.yaml"
 	envFile := basePath + "/.env"
 
-	cfg, err := config.New(configFile, envFile)
-	if err != nil {
-
-	}
-
-	app.Run(ctx, cfg)
+	cfg, err := New(configFile, envFile)
+	require.NoError(t, err)
+	require.Equal(t, "Miners processor env", cfg.AppName)
+	require.Equal(t, "7878", cfg.GrpcPort)
 }

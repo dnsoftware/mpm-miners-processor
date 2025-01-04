@@ -19,89 +19,237 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Coin_GetCoinIDByName_FullMethodName = "/grpc.Coin/GetCoinIDByName"
+	MinersService_GetCoinIDByName_FullMethodName   = "/grpc.MinersService/GetCoinIDByName"
+	MinersService_CreateWallet_FullMethodName      = "/grpc.MinersService/CreateWallet"
+	MinersService_CreateWorker_FullMethodName      = "/grpc.MinersService/CreateWorker"
+	MinersService_GetWalletIDByName_FullMethodName = "/grpc.MinersService/GetWalletIDByName"
+	MinersService_GetWorkerIDByName_FullMethodName = "/grpc.MinersService/GetWorkerIDByName"
 )
 
-// CoinClient is the client API for Coin service.
+// MinersServiceClient is the client API for MinersService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CoinClient interface {
+type MinersServiceClient interface {
 	GetCoinIDByName(ctx context.Context, in *GetCoinIDByNameRequest, opts ...grpc.CallOption) (*GetCoinIDByNameResponse, error)
+	CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletResponse, error)
+	CreateWorker(ctx context.Context, in *CreateWorkerRequest, opts ...grpc.CallOption) (*CreateWorkerResponse, error)
+	GetWalletIDByName(ctx context.Context, in *GetWalletIDByNameRequest, opts ...grpc.CallOption) (*GetWalletIDByNameResponse, error)
+	GetWorkerIDByName(ctx context.Context, in *GetWorkerIDByNameRequest, opts ...grpc.CallOption) (*GetWorkerIDByNameResponse, error)
 }
 
-type coinClient struct {
+type minersServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCoinClient(cc grpc.ClientConnInterface) CoinClient {
-	return &coinClient{cc}
+func NewMinersServiceClient(cc grpc.ClientConnInterface) MinersServiceClient {
+	return &minersServiceClient{cc}
 }
 
-func (c *coinClient) GetCoinIDByName(ctx context.Context, in *GetCoinIDByNameRequest, opts ...grpc.CallOption) (*GetCoinIDByNameResponse, error) {
+func (c *minersServiceClient) GetCoinIDByName(ctx context.Context, in *GetCoinIDByNameRequest, opts ...grpc.CallOption) (*GetCoinIDByNameResponse, error) {
 	out := new(GetCoinIDByNameResponse)
-	err := c.cc.Invoke(ctx, Coin_GetCoinIDByName_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MinersService_GetCoinIDByName_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CoinServer is the server API for Coin service.
-// All implementations must embed UnimplementedCoinServer
+func (c *minersServiceClient) CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletResponse, error) {
+	out := new(CreateWalletResponse)
+	err := c.cc.Invoke(ctx, MinersService_CreateWallet_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *minersServiceClient) CreateWorker(ctx context.Context, in *CreateWorkerRequest, opts ...grpc.CallOption) (*CreateWorkerResponse, error) {
+	out := new(CreateWorkerResponse)
+	err := c.cc.Invoke(ctx, MinersService_CreateWorker_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *minersServiceClient) GetWalletIDByName(ctx context.Context, in *GetWalletIDByNameRequest, opts ...grpc.CallOption) (*GetWalletIDByNameResponse, error) {
+	out := new(GetWalletIDByNameResponse)
+	err := c.cc.Invoke(ctx, MinersService_GetWalletIDByName_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *minersServiceClient) GetWorkerIDByName(ctx context.Context, in *GetWorkerIDByNameRequest, opts ...grpc.CallOption) (*GetWorkerIDByNameResponse, error) {
+	out := new(GetWorkerIDByNameResponse)
+	err := c.cc.Invoke(ctx, MinersService_GetWorkerIDByName_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// MinersServiceServer is the server API for MinersService service.
+// All implementations must embed UnimplementedMinersServiceServer
 // for forward compatibility
-type CoinServer interface {
+type MinersServiceServer interface {
 	GetCoinIDByName(context.Context, *GetCoinIDByNameRequest) (*GetCoinIDByNameResponse, error)
-	mustEmbedUnimplementedCoinServer()
+	CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error)
+	CreateWorker(context.Context, *CreateWorkerRequest) (*CreateWorkerResponse, error)
+	GetWalletIDByName(context.Context, *GetWalletIDByNameRequest) (*GetWalletIDByNameResponse, error)
+	GetWorkerIDByName(context.Context, *GetWorkerIDByNameRequest) (*GetWorkerIDByNameResponse, error)
+	mustEmbedUnimplementedMinersServiceServer()
 }
 
-// UnimplementedCoinServer must be embedded to have forward compatible implementations.
-type UnimplementedCoinServer struct {
+// UnimplementedMinersServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedMinersServiceServer struct {
 }
 
-func (UnimplementedCoinServer) GetCoinIDByName(context.Context, *GetCoinIDByNameRequest) (*GetCoinIDByNameResponse, error) {
+func (UnimplementedMinersServiceServer) GetCoinIDByName(context.Context, *GetCoinIDByNameRequest) (*GetCoinIDByNameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCoinIDByName not implemented")
 }
-func (UnimplementedCoinServer) mustEmbedUnimplementedCoinServer() {}
+func (UnimplementedMinersServiceServer) CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateWallet not implemented")
+}
+func (UnimplementedMinersServiceServer) CreateWorker(context.Context, *CreateWorkerRequest) (*CreateWorkerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateWorker not implemented")
+}
+func (UnimplementedMinersServiceServer) GetWalletIDByName(context.Context, *GetWalletIDByNameRequest) (*GetWalletIDByNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWalletIDByName not implemented")
+}
+func (UnimplementedMinersServiceServer) GetWorkerIDByName(context.Context, *GetWorkerIDByNameRequest) (*GetWorkerIDByNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWorkerIDByName not implemented")
+}
+func (UnimplementedMinersServiceServer) mustEmbedUnimplementedMinersServiceServer() {}
 
-// UnsafeCoinServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CoinServer will
+// UnsafeMinersServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MinersServiceServer will
 // result in compilation errors.
-type UnsafeCoinServer interface {
-	mustEmbedUnimplementedCoinServer()
+type UnsafeMinersServiceServer interface {
+	mustEmbedUnimplementedMinersServiceServer()
 }
 
-func RegisterCoinServer(s grpc.ServiceRegistrar, srv CoinServer) {
-	s.RegisterService(&Coin_ServiceDesc, srv)
+func RegisterMinersServiceServer(s grpc.ServiceRegistrar, srv MinersServiceServer) {
+	s.RegisterService(&MinersService_ServiceDesc, srv)
 }
 
-func _Coin_GetCoinIDByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MinersService_GetCoinIDByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetCoinIDByNameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoinServer).GetCoinIDByName(ctx, in)
+		return srv.(MinersServiceServer).GetCoinIDByName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Coin_GetCoinIDByName_FullMethodName,
+		FullMethod: MinersService_GetCoinIDByName_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoinServer).GetCoinIDByName(ctx, req.(*GetCoinIDByNameRequest))
+		return srv.(MinersServiceServer).GetCoinIDByName(ctx, req.(*GetCoinIDByNameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Coin_ServiceDesc is the grpc.ServiceDesc for Coin service.
+func _MinersService_CreateWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWalletRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MinersServiceServer).CreateWallet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MinersService_CreateWallet_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MinersServiceServer).CreateWallet(ctx, req.(*CreateWalletRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MinersService_CreateWorker_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWorkerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MinersServiceServer).CreateWorker(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MinersService_CreateWorker_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MinersServiceServer).CreateWorker(ctx, req.(*CreateWorkerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MinersService_GetWalletIDByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWalletIDByNameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MinersServiceServer).GetWalletIDByName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MinersService_GetWalletIDByName_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MinersServiceServer).GetWalletIDByName(ctx, req.(*GetWalletIDByNameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MinersService_GetWorkerIDByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWorkerIDByNameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MinersServiceServer).GetWorkerIDByName(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MinersService_GetWorkerIDByName_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MinersServiceServer).GetWorkerIDByName(ctx, req.(*GetWorkerIDByNameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// MinersService_ServiceDesc is the grpc.ServiceDesc for MinersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Coin_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc.Coin",
-	HandlerType: (*CoinServer)(nil),
+var MinersService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "grpc.MinersService",
+	HandlerType: (*MinersServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetCoinIDByName",
-			Handler:    _Coin_GetCoinIDByName_Handler,
+			Handler:    _MinersService_GetCoinIDByName_Handler,
+		},
+		{
+			MethodName: "CreateWallet",
+			Handler:    _MinersService_CreateWallet_Handler,
+		},
+		{
+			MethodName: "CreateWorker",
+			Handler:    _MinersService_CreateWorker_Handler,
+		},
+		{
+			MethodName: "GetWalletIDByName",
+			Handler:    _MinersService_GetWalletIDByName_Handler,
+		},
+		{
+			MethodName: "GetWorkerIDByName",
+			Handler:    _MinersService_GetWorkerIDByName_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
