@@ -15,6 +15,7 @@ import (
 
 	"github.com/dnsoftware/mpm-miners-processor/config"
 	pb "github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc"
+	"github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc/proto"
 )
 
 type Dependencies struct {
@@ -40,7 +41,7 @@ func Run(ctx context.Context, cfg config.Config) {
 	}
 
 	// Регистрируем сервис
-	pb.RegisterMinersServiceServer(grpcServer, minersServer)
+	proto.RegisterMinersServiceServer(grpcServer, minersServer)
 
 	// Запускаем сервер на определенном порту
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)

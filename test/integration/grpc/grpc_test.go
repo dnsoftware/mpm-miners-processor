@@ -19,6 +19,7 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	pb "github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc"
+	"github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc/proto"
 	"github.com/dnsoftware/mpm-miners-processor/internal/constants"
 	tctest "github.com/dnsoftware/mpm-miners-processor/test/testcontainers"
 )
@@ -77,7 +78,7 @@ func setup(t *testing.T) {
 		grpcServer := grpc.NewServer()
 		minersServer, err := pb.NewGRPCServer(pool)
 		require.NoError(t, err)
-		pb.RegisterMinersServiceServer(grpcServer, minersServer)
+		proto.RegisterMinersServiceServer(grpcServer, minersServer)
 		close(serverReady) // Уведомляем, что сервер готов
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("Server exited with error: %v", err)
@@ -107,22 +108,22 @@ func TestGRPCServer(t *testing.T) {
 	defer conn.Close()
 
 	// Создаем клиента
-	client := pb.NewMinersServiceClient(conn)
+	client := proto.NewMinersServiceClient(conn)
 
 	// проверяем реальный запрос/ответ
 	// Coin
-	req := pb.GetCoinIDByNameRequest{Coin: "ALPH"}
+	req := proto.GetCoinIDByNameRequest{Coin: "ALPH"}
 	resp2, err := client.GetCoinIDByName(ctx, &req)
 	require.NoError(t, err)
 	require.Equal(t, resp2.GetId(), int64(4))
 
-	req = pb.GetCoinIDByNameRequest{Coin: "NONAME"}
+	req = proto.GetCoinIDByNameRequest{Coin: "NONAME"}
 	resp2, err = client.GetCoinIDByName(ctx, &req)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "no rows in result set")
 
 	// Wallet
-	res, err := client.CreateWallet(ctx, &pb.CreateWalletRequest{
+	res, err := client.CreateWallet(ctx, &proto.CreateWalletRequest{
 		CoinId:       4,
 		Name:         "wallet",
 		IsSolo:       false,
@@ -131,7 +132,7 @@ func TestGRPCServer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), res.Id)
 
-	res2, err := client.GetWalletIDByName(ctx, &pb.GetWalletIDByNameRequest{
+	res2, err := client.GetWalletIDByName(ctx, &proto.GetWalletIDByNameRequest{
 		Wallet:       "wallet",
 		CoinId:       4,
 		RewardMethod: "PPLNS",
@@ -139,8 +140,18 @@ func TestGRPCServer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), res2.Id)
 
+	// Проверка на повторную вставку
+	resD, err := client.CreateWallet(ctx, &proto.CreateWalletRequest{
+		CoinId:       4,
+		Name:         "wallet",
+		IsSolo:       false,
+		RewardMethod: "PPLNS",
+	})
+	require.NoError(t, err)
+	require.Equal(t, res.Id, resD.Id)
+
 	// Worker
-	res3, err := client.CreateWorker(ctx, &pb.CreateWorkerRequest{
+	res3, err := client.CreateWorker(ctx, &proto.CreateWorkerRequest{
 		CoinId:       4,
 		Workerfull:   "wallet.worker",
 		Wallet:       "wallet",
@@ -153,12 +164,26 @@ func TestGRPCServer(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, int64(1), res3.Id)
 
-	res4, err := client.GetWorkerIDByName(ctx, &pb.GetWorkerIDByNameRequest{
+	res4, err := client.GetWorkerIDByName(ctx, &proto.GetWorkerIDByNameRequest{
 		Workerfull:   "wallet.worker",
 		CoinId:       4,
 		RewardMethod: "PPLNS",
 	})
 	require.NoError(t, err)
 	require.Equal(t, int64(1), res4.Id)
+
+	// Проверка на повторную вставку
+	res5, err := client.CreateWorker(ctx, &proto.CreateWorkerRequest{
+		CoinId:       4,
+		Workerfull:   "wallet.worker",
+		Wallet:       "wallet",
+		Worker:       "worker",
+		ServerId:     "SERV",
+		Ip:           "127.0.0.1",
+		IsSolo:       false,
+		RewardMethod: "PPLNS",
+	})
+	require.NoError(t, err)
+	require.Equal(t, res3.Id, res5.Id)
 
 }

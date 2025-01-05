@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: proto/miners.proto
 
-package grpc
+package proto
 
 import (
 	context "context"

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package grpc;
 
-option go_package = "internal/adapter/grpc";
+option go_package = "internal/adapter/grpc/proto";
 
 //import "google/rpc/status.proto"; // Импортируем стандартный тип ошибки
 
