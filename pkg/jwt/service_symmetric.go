@@ -162,7 +162,7 @@ func (s *ServiceSymmetric) GetValidateInterceptor() grpc.UnaryServerInterceptor 
 }
 
 // GetClientInterceptor Unary Interceptor для добавления JWT-токена
-func (s *ServiceSymmetric) GetClientInterceptor() grpc.UnaryClientInterceptor {
+func (s *ServiceSymmetric) GetClientInterceptord() grpc.UnaryClientInterceptor {
 
 	return func(
 		ctx context.Context,
