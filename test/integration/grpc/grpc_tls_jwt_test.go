@@ -12,17 +12,18 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 
 	pb "github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc"
 	"github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc/proto"
 	"github.com/dnsoftware/mpm-miners-processor/internal/constants"
+	"github.com/dnsoftware/mpm-miners-processor/pkg/certmanager"
 	jwt2 "github.com/dnsoftware/mpm-miners-processor/pkg/jwt"
 	tctest "github.com/dnsoftware/mpm-miners-processor/test/testcontainers"
 )
 
+// тестируем mTLS соединение между клиентом и сервером с использованием JWT авторизации
 func TestTLSJWTTest(t *testing.T) {
 
 	// Создаем буферизованный listener
@@ -67,10 +68,18 @@ func TestTLSJWTTest(t *testing.T) {
 
 	jwt := jwt2.NewJWTServiceSymmetric("normalizer", []string{"normalizer"}, "jwtsecret")
 
+	path, err := utils.GetProjectRoot(".env")
+	require.NoError(t, err)
+	certManager, err := certmanager.NewCertManager(path + "/certs")
+	require.NoError(t, err)
+
 	// Поднимаем gRPC-сервер в фоновом процессе
 	go func() {
+		serverCreds, err := certManager.GetServerCredentials()
+		require.NoError(t, err)
+
 		interceptor := jwt.GetValidateInterceptor()
-		grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
+		grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptor), grpc.Creds(*serverCreds))
 		minersServer, err := pb.NewGRPCServer(pool)
 		require.NoError(t, err)
 		proto.RegisterMinersServiceServer(grpcServer, minersServer)
@@ -86,11 +95,16 @@ func TestTLSJWTTest(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
+	// Полномочия для TLS соединения
+	clientCreds, err := certManager.GetClientCredentials()
+	require.NoError(t, err)
+
 	// Создаем gRPC соединение через `NewClient`
 	conn, err := grpc.DialContext(ctx,
 		"bufnet",                          // Адрес символический, используется только для идентификации (т.к. используем bufconn в тестах)
 		grpc.WithContextDialer(bufDialer), // Указываем кастомный диалер
-		grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
+		// grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
+		grpc.WithTransportCredentials(*clientCreds), // используем TLS
 	)
 	if err != nil {
 		t.Fatalf("Failed to create gRPC client: %v", err)
