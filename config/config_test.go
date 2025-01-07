@@ -22,4 +22,5 @@ func TestConfigNew(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "Miners processor env", cfg.AppName)
 	require.Equal(t, "7878", cfg.GrpcPort)
+	require.Equal(t, "minersprocessor", cfg.JWTServiceName)
 }

@@ -1,4 +1,9 @@
 app_name: Miners processor
 app_version: 0.1
 postgres_dsn: "postgres://postgres:postgres@localhost:33484/postgres?sslmode=disable"
+grpc_port: 7878
+jwt_service_name: "minersprocessor"
 jwt_secret: "jwtsecret"
+jwt_valid_services:
+  - "normalizer"
+  - "timeseries"

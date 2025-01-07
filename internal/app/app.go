@@ -10,12 +10,16 @@ import (
 	"syscall"
 
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
+	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 
 	"github.com/dnsoftware/mpm-miners-processor/config"
 	pb "github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc"
 	"github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc/proto"
+	"github.com/dnsoftware/mpm-miners-processor/internal/constants"
+	"github.com/dnsoftware/mpm-miners-processor/pkg/certmanager"
+	jwtauth "github.com/dnsoftware/mpm-miners-processor/pkg/jwt"
 )
 
 type Dependencies struct {
@@ -33,8 +37,23 @@ func Run(ctx context.Context, cfg config.Config) {
 		panic("Unable to connect to database: " + err.Error())
 	}
 
+	basePath, err := utils.GetProjectRoot(constants.ProjectRootAnchorFile)
+	if err != nil {
+		logger.Log().Fatal("Base path error: " + err.Error())
+	}
+
+	jwt := jwtauth.NewJWTServiceSymmetric(cfg.JWTServiceName, cfg.JWTValidServices, cfg.JWTSecret)
+
+	certManager, err := certmanager.NewCertManager(basePath + "/certs")
+	if err != nil {
+		logger.Log().Fatal("NewCertManager error: " + err.Error())
+	}
+
 	// Создаем gRPC-сервер
-	grpcServer := grpc.NewServer()
+	serverCreds, err := certManager.GetServerCredentials()
+	interceptor := jwt.GetValidateInterceptor()
+
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptor), grpc.Creds(*serverCreds))
 	minersServer, err := pb.NewGRPCServer(pool)
 	if err != nil {
 		logger.Log().Fatal("Error create NewGRPCServer: " + err.Error())
