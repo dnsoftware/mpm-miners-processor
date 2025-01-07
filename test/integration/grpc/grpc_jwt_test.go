@@ -101,7 +101,7 @@ func TestJWTTest(t *testing.T) {
 	client := proto.NewMinersServiceClient(conn)
 
 	// Генерация токена
-	token, err := jwt.GenerateJWT()
+	token, err := jwt.GetActualToken()
 	if err != nil {
 		log.Fatalf("failed to generate token: %v", err)
 	}

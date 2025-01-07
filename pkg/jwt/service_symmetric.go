@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -20,31 +21,53 @@ type ClaimsSymmetric struct {
 // ServiceSymmetric -симметричное шифрование (у клиента и сервера один секретный ключ,
 // взаимодействуют сервисы из определенного списка)
 type ServiceSymmetric struct {
-	serviceName       string
-	validServicesList []string      // список названий сервисов, от которых принимаем запросы
-	secret            string        // секрет для проверки и генерации подписи
-	validityPeriod    time.Duration // Период действия в минутах
+	serviceName        string
+	validServicesList  []string      // список названий сервисов, от которых принимаем запросы
+	secret             string        // секрет для проверки и генерации подписи
+	validityPeriod     time.Duration // Период действия в минутах
+	mu                 sync.Mutex
+	currentClientToken string // текущий клиентский токен в строковой форме
 }
 
 func NewJWTServiceSymmetric(serviceName string, validServicesList []string, secret string) *ServiceSymmetric {
 	s := &ServiceSymmetric{
-		serviceName:       serviceName,
-		validServicesList: validServicesList,
-		secret:            secret,
-		validityPeriod:    60, // 60 минут (TODO вынести в конфиг)
+		serviceName:        serviceName,
+		validServicesList:  validServicesList,
+		secret:             secret,
+		validityPeriod:     60, // 60 минут (TODO вынести в конфиг)
+		currentClientToken: "",
 	}
 
 	return s
 }
 
-// TODO удалить
-//// ServiceName Получить имя JWT сервиса
-//func (s *ServiceSymmetric) ServiceName() string {
-//	return s.serviceName
-//}
+// GetActualToken Сгенерировать новый токен, если еще не создан или если действие старого скоро истечет
+// Если еще не истекло - возвращаем текущий токен
+func (s *ServiceSymmetric) GetActualToken() (string, error) {
 
-// GenerateJWT создает JWT токен
-func (s *ServiceSymmetric) GenerateJWT() (string, error) {
+	if s.currentClientToken == "" {
+		// Генерируем новый токен
+		return s.generateClientJWT()
+	}
+
+	claims, err := s.GetClaims(s.currentClientToken)
+	if err != nil {
+		return "", err
+	}
+
+	// Проверяем, нужен ли новый токен
+	// Если текущее время перед временем истечения срока действия - возвращаем текущий токен
+	// Добавляем минуту, чтобы немного заранее обновить токен
+	if time.Now().Add(1 * time.Minute).Before(claims.ExpiresAt.Time) {
+		return s.currentClientToken, nil
+	}
+
+	// Генерируем новый токен
+	return s.generateClientJWT()
+}
+
+// GenerateClientJWT создает JWT токен
+func (s *ServiceSymmetric) generateClientJWT() (string, error) {
 	claims := ClaimsSymmetric{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.validityPeriod * time.Minute)),
@@ -54,7 +77,16 @@ func (s *ServiceSymmetric) GenerateJWT() (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(s.secret))
+	tokenStr, err := token.SignedString([]byte(s.secret))
+	if err != nil {
+		return tokenStr, err
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.currentClientToken = tokenStr
+
+	return s.currentClientToken, err
 }
 
 // GetClaims получение утверждений из токена
@@ -126,5 +158,30 @@ func (s *ServiceSymmetric) GetValidateInterceptor() grpc.UnaryServerInterceptor 
 
 		// Продолжение выполнения запроса
 		return handler(ctx, req)
+	}
+}
+
+// GetClientInterceptor Unary Interceptor для добавления JWT-токена
+func (s *ServiceSymmetric) GetClientInterceptor() grpc.UnaryClientInterceptor {
+	return func(
+		ctx context.Context,
+		method string,
+		req interface{},
+		reply interface{},
+		cc *grpc.ClientConn,
+		invoker grpc.UnaryInvoker,
+		opts ...grpc.CallOption,
+	) error {
+
+		token, err := s.GetActualToken()
+		if err != nil {
+			return err
+		}
+
+		// Добавляем токен в метаданные
+		ctx = metadata.AppendToOutgoingContext(ctx, "authorization", token)
+
+		// Выполняем основной запрос
+		return invoker(ctx, method, req, reply, cc, opts...)
 	}
 }

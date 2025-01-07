@@ -105,6 +105,7 @@ func TestTLSJWTTest(t *testing.T) {
 		grpc.WithContextDialer(bufDialer), // Указываем кастомный диалер
 		// grpc.WithTransportCredentials(insecure.NewCredentials()), // Отключаем TLS
 		grpc.WithTransportCredentials(*clientCreds), // используем TLS
+		grpc.WithUnaryInterceptor(jwt.GetClientInterceptor()),
 	)
 	if err != nil {
 		t.Fatalf("Failed to create gRPC client: %v", err)
@@ -115,7 +116,7 @@ func TestTLSJWTTest(t *testing.T) {
 	client := proto.NewMinersServiceClient(conn)
 
 	// Генерация токена
-	token, err := jwt.GenerateJWT()
+	token, err := jwt.GetActualToken()
 	if err != nil {
 		log.Fatalf("failed to generate token: %v", err)
 	}
