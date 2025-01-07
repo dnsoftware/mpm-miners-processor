@@ -4,3 +4,7 @@
 **/test.log
 app.log
 config.yaml
+/certs/*.crt
+/certs/*.key
+/certs/*.csr
+/certs/*.srl
