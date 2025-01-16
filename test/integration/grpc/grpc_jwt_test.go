@@ -65,7 +65,7 @@ func TestJWTTest(t *testing.T) {
 	}
 	log.Println("Миграции успешно применены")
 
-	jwt := jwt2.NewJWTServiceSymmetric("normalizer", []string{"normalizer"}, "jwtsecret")
+	jwt := jwt2.NewJWTServiceSymmetric("normalizer", []string{"normalizer"}, "jwtsecret", 60)
 
 	// Поднимаем gRPC-сервер в фоновом процессе
 	go func() {

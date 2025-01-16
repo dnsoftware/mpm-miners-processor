@@ -29,12 +29,12 @@ type ServiceSymmetric struct {
 	currentClientToken string // текущий клиентский токен в строковой форме
 }
 
-func NewJWTServiceSymmetric(serviceName string, validServicesList []string, secret string) *ServiceSymmetric {
+func NewJWTServiceSymmetric(serviceName string, validServicesList []string, secret string, validityPeriod time.Duration) *ServiceSymmetric {
 	s := &ServiceSymmetric{
 		serviceName:        serviceName,
 		validServicesList:  validServicesList,
 		secret:             secret,
-		validityPeriod:     60, // 60 минут (TODO вынести в конфиг)
+		validityPeriod:     validityPeriod,
 		currentClientToken: "",
 	}
 
@@ -57,8 +57,8 @@ func (s *ServiceSymmetric) GetActualToken() (string, error) {
 
 	// Проверяем, нужен ли новый токен
 	// Если текущее время перед временем истечения срока действия - возвращаем текущий токен
-	// Добавляем минуту, чтобы немного заранее обновить токен
-	if time.Now().Add(1 * time.Minute).Before(claims.ExpiresAt.Time) {
+	// Добавляем 30 секунд, чтобы немного заранее обновить токен
+	if time.Now().Add(30 * time.Second).Before(claims.ExpiresAt.Time) {
 		return s.currentClientToken, nil
 	}
 

@@ -11,8 +11,12 @@ import (
 
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
+
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/dnsoftware/mpm-miners-processor/config"
 	pb "github.com/dnsoftware/mpm-miners-processor/internal/adapter/grpc"
@@ -29,6 +33,12 @@ func Run(ctx context.Context, cfg config.Config) {
 	var deps Dependencies
 	_ = deps
 
+	filePath, err := logger.GetLoggerMainLogPath()
+	if err != nil {
+		panic("Bad logger init: " + err.Error())
+	}
+	logger.InitLogger(logger.LogLevelDebug, filePath)
+
 	/********* Инициализация трассировщика **********/
 	/********* КОНЕЦ Инициализация трассировщика **********/
 
@@ -42,7 +52,20 @@ func Run(ctx context.Context, cfg config.Config) {
 		logger.Log().Fatal("Base path error: " + err.Error())
 	}
 
-	jwt := jwtauth.NewJWTServiceSymmetric(cfg.JWTServiceName, cfg.JWTValidServices, cfg.JWTSecret)
+	m, err := migrate.New(
+		"file://"+basePath+"/"+constants.MigrationDir,
+		cfg.PostgresDSN,
+	)
+	if err != nil {
+		logger.Log().Fatal("Bad migration: " + err.Error())
+	}
+
+	// Применить миграции
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("Ошибка при применении миграций: %v", err)
+	}
+
+	jwt := jwtauth.NewJWTServiceSymmetric(cfg.JWTServiceName, cfg.JWTValidServices, cfg.JWTSecret, 60)
 
 	certManager, err := certmanager.NewCertManager(basePath + "/certs")
 	if err != nil {
