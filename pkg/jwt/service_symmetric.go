@@ -50,20 +50,32 @@ func (s *ServiceSymmetric) GetActualToken() (string, error) {
 		return s.generateClientJWT()
 	}
 
-	claims, err := s.GetClaims(s.currentClientToken)
+	_, err := s.GetClaims(s.currentClientToken)
+
 	if err != nil {
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 { // токен истек
+				fmt.Println("Token has expired")
+				// Генерируем новый токен
+				return s.generateClientJWT()
+			} else {
+				return "", err
+			}
+		}
+
 		return "", err
 	}
 
+	// TODO удалить после тестов фрагмента выше
 	// Проверяем, нужен ли новый токен
-	// Если текущее время перед временем истечения срока действия - возвращаем текущий токен
-	// Добавляем 30 секунд, чтобы немного заранее обновить токен
-	if time.Now().Add(30 * time.Second).Before(claims.ExpiresAt.Time) {
-		return s.currentClientToken, nil
-	}
+	//// Если текущее время перед временем истечения срока действия - возвращаем текущий токен
+	//// Добавляем 30 секунд, чтобы немного заранее обновить токен
+	//if time.Now().Add(30 * time.Second).Before(claims.ExpiresAt.Time) {
+	//	return s.currentClientToken, nil
+	//}
 
-	// Генерируем новый токен
-	return s.generateClientJWT()
+	return s.currentClientToken, nil
+
 }
 
 // GenerateClientJWT создает JWT токен
