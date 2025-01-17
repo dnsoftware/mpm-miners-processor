@@ -66,14 +66,6 @@ func (s *ServiceSymmetric) GetActualToken() (string, error) {
 		return "", err
 	}
 
-	// TODO удалить после тестов фрагмента выше
-	// Проверяем, нужен ли новый токен
-	//// Если текущее время перед временем истечения срока действия - возвращаем текущий токен
-	//// Добавляем 30 секунд, чтобы немного заранее обновить токен
-	//if time.Now().Add(30 * time.Second).Before(claims.ExpiresAt.Time) {
-	//	return s.currentClientToken, nil
-	//}
-
 	return s.currentClientToken, nil
 
 }
