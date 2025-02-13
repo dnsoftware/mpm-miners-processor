@@ -1,0 +1,6 @@
+appID: "mpm_miners_processor"
+etcd:
+  endpoints: "127.0.0.1:2379,127.0.0.1:2479,127.0.0.1:2579"
+  auth:
+    username: "root"
+    password: "securepassword"

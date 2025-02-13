@@ -1,0 +1,6 @@
+appID: "${APP_ID}"
+etcd:
+  endpoints: "${ETCD_NODESLIST}"
+  auth:
+    username: "${ETCD_LOGIN}"
+    password: "${ETCD_PASSWORD}"

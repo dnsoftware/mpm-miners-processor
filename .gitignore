@@ -8,3 +8,4 @@ config.yaml
 /certs/*.key
 /certs/*.csr
 /certs/*.srl
+/_config.yaml

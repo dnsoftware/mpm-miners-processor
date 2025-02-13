@@ -10,14 +10,22 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type Etcd struct {
+	Endpoints string
+	Username  string
+	Password  string
+}
+
 type Config struct {
-	AppName          string   `yaml:"app_name" envconfig:"APP_NAME"    required:"true"`
-	AppVersion       string   `yaml:"app_version" envconfig:"APP_VERSION" required:"true"`
-	PostgresDSN      string   `yaml:"postgres_dsn" envconfig:"POSTGRES_DSN" required:"true"`
-	GrpcPort         string   `yaml:"grpc_port" envconfig:"GRPC_PORT" required:"true"`
-	JWTServiceName   string   `yaml:"jwt_service_name" envconfig:"JWT_SERVICE_NAME" required:"true"`     // Название сервиса (для сверки с JWTValidServices при авторизаии)
-	JWTSecret        string   `yaml:"jwt_secret" envconfig:"JWT_SECRET" required:"true"`                 // JWT секрет
-	JWTValidServices []string `yaml:"jwt_valid_services" envconfig:"JWT_VALID_SERVICES" required:"true"` // список микросервисов (через запятую), которым разрешен доступ
+	AppID            string
+	EtcdConfig       Etcd
+	AppName          string   `yaml:"app_name" envconfig:"APP_NAME"    required:"false"`
+	AppVersion       string   `yaml:"app_version" envconfig:"APP_VERSION" required:"false"`
+	PostgresDSN      string   `yaml:"postgres_dsn" envconfig:"POSTGRES_DSN" required:"false"`
+	GrpcPort         string   `yaml:"grpc_port" envconfig:"GRPC_PORT" required:"false"`
+	JWTServiceName   string   `yaml:"jwt_service_name" envconfig:"JWT_SERVICE_NAME" required:"false"`     // Название сервиса (для сверки с JWTValidServices при авторизаии)
+	JWTSecret        string   `yaml:"jwt_secret" envconfig:"JWT_SECRET" required:"false"`                 // JWT секрет
+	JWTValidServices []string `yaml:"jwt_valid_services" envconfig:"JWT_VALID_SERVICES" required:"false"` // список микросервисов (через запятую), которым разрешен доступ
 
 }
 

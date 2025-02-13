@@ -1,7 +1,8 @@
 app_name: Miners processor
 app_version: 0.1
 service_name: "minersprocessor"
-postgres_dsn: "postgres://postgres:postgres@localhost:33484/postgres?sslmode=disable"
+#postgres_dsn: "postgres://mpmpool:mpmpoolpass@62.113.106.101:6532/mpmpool?sslmode=disable"
+postgres_dsn: "postgres://p1pool:p1pool@127.0.0.1:54321/mpmpool?sslmode=disable"
 grpc_port: 7878
 jwt_service_name: "minersprocessor"
 jwt_secret: "jwtsecret"

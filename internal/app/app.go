@@ -33,12 +33,6 @@ func Run(ctx context.Context, cfg config.Config) {
 	var deps Dependencies
 	_ = deps
 
-	filePath, err := logger.GetLoggerMainLogPath()
-	if err != nil {
-		panic("Bad logger init: " + err.Error())
-	}
-	logger.InitLogger(logger.LogLevelDebug, filePath)
-
 	/********* Инициализация трассировщика **********/
 	/********* КОНЕЦ Инициализация трассировщика **********/
 
