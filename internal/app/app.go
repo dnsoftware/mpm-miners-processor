@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
@@ -24,6 +25,7 @@ import (
 	"github.com/dnsoftware/mpm-miners-processor/internal/constants"
 	"github.com/dnsoftware/mpm-miners-processor/pkg/certmanager"
 	jwtauth "github.com/dnsoftware/mpm-miners-processor/pkg/jwt"
+	"github.com/dnsoftware/mpm-miners-processor/pkg/servicediscovery"
 )
 
 type Dependencies struct {
@@ -45,6 +47,37 @@ func Run(ctx context.Context, cfg config.Config) {
 	if err != nil {
 		logger.Log().Fatal("Base path error: " + err.Error())
 	}
+
+	etcdConf, err := servicediscovery.NewEtcdConfig(servicediscovery.EtcdConfig{
+		Nodes:       strings.Split(cfg.EtcdConfig.Endpoints, ","),
+		Username:    cfg.EtcdConfig.Username,
+		Password:    cfg.EtcdConfig.Password,
+		CertCaPath:  basePath + constants.CaPath,
+		CertPath:    basePath + constants.PublicPath,
+		CertKeyPath: basePath + constants.PrivatePath,
+	})
+	if err != nil {
+		log.Fatalf("NewEtcdConfig error: %s", err.Error())
+	}
+
+	// Регистрируемся в ServiceDiscovery
+	serviceKey := cfg.AppID + ":" + constants.ApiBaseUrlGrpc
+	serviceAddr := cfg.ApiBaseUrls.Grps
+	sd, err := servicediscovery.NewServiceDiscovery(*etcdConf, constants.ServiceDiscoveryPath, serviceKey, serviceAddr, 5, 10)
+	if err != nil {
+		log.Fatalf("NewServiceDiscovery error: %s", err.Error())
+	}
+
+	sd.WaitDependencies(cfg.Dependencies)
+	baseUrls, err := sd.DiscoverAllServices()
+	if err != nil {
+		log.Fatalf("DiscoverAllServices error: %s", err.Error())
+	}
+	_ = baseUrls
+	logger.Log().Info("All services discovered")
+
+	// инициализируем BaseURLs доступа к API внешних сервисов
+	cfg.GRPCConfig.SharesProcessor = cfg.ServiceDiscoveryList[cfg.GRPCConfig.SharesProcessor]
 
 	m, err := migrate.New(
 		"file://"+basePath+"/"+constants.MigrationDir,
@@ -80,7 +113,8 @@ func Run(ctx context.Context, cfg config.Config) {
 	proto.RegisterMinersServiceServer(grpcServer, minersServer)
 
 	// Запускаем сервер на определенном порту
-	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
+	addrParts := strings.Split(cfg.ApiBaseUrls.Grps, ":")
+	lis, err := net.Listen("tcp", ":"+addrParts[1])
 	if err != nil {
 		logger.Log().Fatal(fmt.Sprintf("Failed to listen: %v", err))
 	}

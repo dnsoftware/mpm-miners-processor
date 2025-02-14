@@ -31,7 +31,7 @@ func main() {
 
 	startConf, err := configloader.LoadStartConfig(basePath + constants.StartConfigFilename)
 	if err != nil {
-		log.Fatalf("start config load error: %w", err)
+		log.Fatalf("start config load error: %s", err)
 	}
 
 	err = config.LoadRemoteConfig(basePath, *startConf, logger.Log().Logger)
@@ -41,7 +41,7 @@ func main() {
 
 	cfg, err := config.New(configFile, envFile)
 	if err != nil {
-		log.Fatalf("config load error: %w", err)
+		log.Fatalf("config load error: %s", err)
 	}
 
 	cfg.AppID = startConf.AppID

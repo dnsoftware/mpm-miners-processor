@@ -9,3 +9,4 @@ config.yaml
 /certs/*.csr
 /certs/*.srl
 /_config.yaml
+/startconf.yaml

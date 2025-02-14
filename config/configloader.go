@@ -17,7 +17,7 @@ func LoadRemoteConfig(basePath string, startConf configloader.StartConfig, logge
 	// Получение основного конфига
 	localConfigPath := basePath + constants.LocalConfigPath
 	clusterNode := strings.Split(startConf.Etcd.Endpoints, ",")
-	remoteDataKey := constants.ServiceDiscoveryPath + "/" + startConf.AppID
+	remoteDataKey := constants.ServiceConfigPath + "/" + startConf.AppID
 	caPath := basePath + constants.CaPath
 	publicPath := basePath + constants.PublicPath
 	privatePath := basePath + constants.PrivatePath
@@ -29,13 +29,13 @@ func LoadRemoteConfig(basePath string, startConf configloader.StartConfig, logge
 
 	confText, err := confLoader.LoadRemoteConfig(remoteDataKey)
 	if err != nil { // Если удаленный конфиг не загрузился - логируем ошибку и загружаем локальный вариант
-		return fmt.Errorf("no remote configs load: %w", err.Error())
+		return fmt.Errorf("no remote configs load: %s", err.Error())
 	}
 
 	// если нормально загрузился - сохраняем в локальный файл
 	err = confLoader.SaveConfigToFile(confText)
 	if err != nil {
-		return fmt.Errorf("SaveConfigToFile error: %w", err)
+		return fmt.Errorf("SaveConfigToFile error: %s", err)
 	}
 
 	return nil
