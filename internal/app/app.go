@@ -12,6 +12,7 @@ import (
 
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/logger"
 	"github.com/dnsoftware/mpm-save-get-shares/pkg/utils"
+	"github.com/dnsoftware/mpmslib/pkg/servicediscovery"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
@@ -25,7 +26,6 @@ import (
 	"github.com/dnsoftware/mpm-miners-processor/internal/constants"
 	"github.com/dnsoftware/mpm-miners-processor/pkg/certmanager"
 	jwtauth "github.com/dnsoftware/mpm-miners-processor/pkg/jwt"
-	"github.com/dnsoftware/mpm-miners-processor/pkg/servicediscovery"
 )
 
 type Dependencies struct {
@@ -66,6 +66,11 @@ func Run(ctx context.Context, cfg config.Config) {
 	sd, err := servicediscovery.NewServiceDiscovery(*etcdConf, constants.ServiceDiscoveryPath, serviceKey, serviceAddr, 5, 10)
 	if err != nil {
 		log.Fatalf("NewServiceDiscovery error: %s", err.Error())
+	}
+
+	err = sd.RegisterService(cfg.AppID+":"+constants.ApiBaseUrlRest, cfg.ApiBaseUrls.Rest)
+	if err != nil {
+		log.Fatalf("Rest service register error: %s", err.Error())
 	}
 
 	sd.WaitDependencies(cfg.Dependencies)

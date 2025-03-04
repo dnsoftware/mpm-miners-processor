@@ -1,12 +1,19 @@
 app_name: Miners processor
 app_version: 0.1
-service_ip: "127.0.0.1"
+dependencies:     # Зависимости от других микросервисов (будет ожидать их запуска, отслеживание через Service Discovery)
+  - "mpm_shares_processor:grpc"
+
+api_base_urls:  # базовые URLs для API текушего микросервиса
+  grpc: 127.0.0.1:7878
+
 #postgres_dsn: "postgres://mpmpool:mpmpoolpass@62.113.106.101:6532/mpmpool?sslmode=disable"
-postgres_dsn: "postgres://p1pool:p1pool@127.0.0.1:54321/mpmpool?sslmode=disable"
-grpc_port: 7878
+postgres_dsn: "postgres://p1pool:Rextra516255@127.0.0.1:54321/mpmpool?sslmode=disable"
 jwt_service_name: "minersprocessor"
 jwt_secret: "jwtsecret"
 jwt_valid_services:
   - "normalizer"
   - "timeseries"
   - "analitic"
+
+grpc:  # Адреса внешних связанных служб gRPC
+  shares_processor: "mpm_shares_processor:grpc"
